@@ -167,17 +167,18 @@ h1 { margin-bottom: 6px; font-size: 27px; font-weight: 700; letter-spacing: 0; l
 .saved-delete svg { width: 14px; height: 14px; }
 
 .auth-dialog { width: min(410px, calc(100% - 28px)); padding: 0; border: 1px solid var(--line); border-radius: 9px; background: white; box-shadow: 0 20px 70px rgba(26,44,30,.2); }
-.auth-dialog::backdrop { background: rgba(23,34,26,.45); backdrop-filter: blur(3px); }
-.auth-form { position: relative; display: flex; flex-direction: column; padding: 30px; }
-.dialog-close { position: absolute; top: 12px; right: 14px; border: 0; background: none; color: #79837b; font-size: 24px; cursor: pointer; }
+.auth-dialog::backdrop { background: rgba(23,34,26,.62); backdrop-filter: blur(4px); }
+.auth-form { position: relative; display: flex; flex-direction: column; padding: 34px; }
 .auth-mark { display: grid; width: 39px; height: 39px; place-items: center; margin-bottom: 19px; border-radius: 10px; background: var(--forest); color: white; font-size: 11px; font-weight: 700; }
 .auth-form .eyebrow { margin-bottom: 7px; }
-.auth-form h2 { margin-bottom: 7px; font-size: 19px; letter-spacing: 0; }
+.auth-form h1 { margin: 0 0 7px; font-size: 24px; letter-spacing: 0; }
 .auth-description { margin-bottom: 20px; color: var(--muted); font-size: 11px; }
 .auth-form > label { margin: 0 0 6px; }
 .auth-form > input { margin-bottom: 14px; }
 .auth-submit { margin-top: 4px; }
 .auth-message { min-height: 0; margin: 8px 0 0; color: #a1533f; font-size: 10px; }
+.auth-back { align-self: center; margin-top: 18px; color: var(--forest); font-size: 11px; font-weight: 600; }
+.auth-back:hover { color: var(--forest-deep); text-decoration: underline; }
 .toast { position: fixed; right: 23px; bottom: 22px; z-index: 5; max-width: min(380px, calc(100vw - 32px)); padding: 11px 15px; transform: translateY(14px); border: 1px solid #d6e3d6; border-radius: 6px; background: #fff; box-shadow: 0 8px 28px rgba(30,52,35,.13); color: #385d40; font-size: 11px; opacity: 0; pointer-events: none; transition: opacity .2s ease, transform .2s ease; }
 .toast.visible { transform: translateY(0); opacity: 1; }
 

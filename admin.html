@@ -14,7 +14,7 @@
   <script type="module" src="admin.js"></script>
 </head>
 <body>
-  <div class="app-shell">
+  <div class="app-shell" id="admin-app" hidden>
     <aside class="sidebar" aria-label="Navegación del administrador">
       <a class="brand" href="index.html" aria-label="Nativa Botánica, ir a la tienda">
         <span class="brand-icon" aria-hidden="true">
@@ -54,7 +54,7 @@
         <div class="breadcrumbs"><span>Productos</span><span class="crumb-divider">/</span><strong>Nuevo producto</strong></div>
         <div class="top-actions">
           <span class="connection-label" id="connection-label"><span class="status-dot"></span>Guardado local</span>
-          <button class="login-trigger" id="login-open" type="button" hidden>Iniciar sesión</button>
+          <button class="login-trigger" id="logout-button" type="button" hidden>Cerrar sesión</button>
         </div>
       </header>
 
@@ -172,17 +172,17 @@
 
   <dialog class="auth-dialog" id="auth-dialog" aria-labelledby="auth-title">
     <form id="auth-form" class="auth-form">
-      <button class="dialog-close" id="login-close" type="button" aria-label="Cerrar">×</button>
       <span class="auth-mark" aria-hidden="true">NB</span>
       <p class="eyebrow">NATIVA BOTÁNICA</p>
-      <h2 id="auth-title">Acceso de administración</h2>
-      <p class="auth-description">Inicia sesión con un usuario creado en Supabase para publicar en la tienda.</p>
+      <h1 id="auth-title">Inicia sesión</h1>
+      <p class="auth-description">Acceso exclusivo para la administración de Nativa Botánica.</p>
       <label for="auth-email">Correo electrónico</label>
       <input id="auth-email" type="email" autocomplete="username" required>
       <label for="auth-password">Contraseña</label>
       <input id="auth-password" type="password" autocomplete="current-password" required>
-      <button class="button button-primary auth-submit" type="submit">Iniciar sesión</button>
+      <button class="button button-primary auth-submit" type="submit">Entrar al panel</button>
       <p class="auth-message" id="auth-message" role="status" aria-live="polite"></p>
+      <a class="auth-back" href="index.html">Volver a la tienda</a>
     </form>
   </dialog>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
