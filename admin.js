@@ -1,9 +1,8 @@
 (function () {
   "use strict";
 
-  // Completa estas dos propiedades para conectar el proyecto de Supabase.
-  var SUPABASE_URL = "";
-  var SUPABASE_ANON_KEY = "";
+  var SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "";
+  var SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
   var TABLE = "products";
   var BUCKET = "product-images";
   var STORAGE_KEY = "nativa-admin-products-v1";
