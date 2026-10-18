@@ -212,12 +212,12 @@
     <div class="section-head">
       <div>
         <p class="eyebrow">La despensa</p>
-        <h2>Cuatro básicos que sí puedes sostener.</h2>
+        <h2>Básicos botánicos que sí puedes sostener.</h2>
       </div>
       <p class="section-note">Fórmulas cortas, ingredientes reconocibles y porciones claras. Nada que no puedas pronunciar.</p>
     </div>
 
-    <div class="product-grid">
+    <div class="product-grid" id="product-grid">
       <article class="product">
         <div class="product-art">
           <svg viewBox="0 0 400 300" role="img" aria-labelledby="art-tea">
@@ -362,6 +362,7 @@
       </article>
     </div>
 
+    <p class="catalog-status" id="catalog-status" role="status" aria-live="polite" hidden></p>
     <p class="fine-print">Los productos de origen vegetal no son medicamentos. Los resultados varían según la persona, su alimentación y su rutina. Consulta a tu profesional de salud antes de iniciar un suplemento.</p>
   </section>
 
@@ -575,6 +576,7 @@
     var STORAGE_KEY = "nativa-cart-v1";
     var cart = readCart();
 
+    var productGrid = document.getElementById("product-grid");
     var cartBtn = document.getElementById("cart-open");
     var cartCount = document.getElementById("cart-count");
     var drawer = document.getElementById("cart-drawer");
@@ -598,10 +600,10 @@
       try {
         var raw = JSON.parse(localStorage.getItem(STORAGE_KEY));
         if (!raw || typeof raw !== "object") return {};
-        var clean = {};
+        var clean = Object.create(null);
         Object.keys(raw).forEach(function (id) {
           var qty = raw[id];
-          if (PRODUCTS[id] && typeof qty === "number" && isFinite(qty) && qty > 0) {
+          if (/^[a-zA-Z0-9_-]+$/.test(id) && typeof qty === "number" && isFinite(qty) && qty > 0) {
             clean[id] = Math.min(Math.floor(qty), 99);
           }
         });
@@ -624,7 +626,9 @@
     }
 
     function renderCart() {
-      var ids = Object.keys(cart);
+      var ids = Object.keys(cart).filter(function (id) {
+        return Object.prototype.hasOwnProperty.call(PRODUCTS, id);
+      });
       var count = 0;
       var total = 0;
 
@@ -644,25 +648,54 @@
       cartList.hidden = count === 0;
       cartFoot.hidden = count === 0;
 
-      cartList.innerHTML = ids.map(function (id) {
+      cartList.replaceChildren();
+      ids.forEach(function (id) {
         var product = PRODUCTS[id];
-        return "" +
-          '<li class="cart-item" data-id="' + id + '">' +
-            '<div>' +
-              '<p class="cart-item-name">' + product.name + '</p>' +
-              '<p class="cart-item-size">' + product.size + '</p>' +
-              '<div class="qty">' +
-                '<button type="button" data-act="dec" aria-label="Quitar una unidad de ' + product.name + '">−</button>' +
-                '<span aria-label="Cantidad: ' + cart[id] + '">' + cart[id] + '</span>' +
-                '<button type="button" data-act="inc" aria-label="Agregar una unidad de ' + product.name + '">+</button>' +
-              '</div>' +
-            '</div>' +
-            '<div class="cart-item-side">' +
-              '<p class="cart-item-price">' + money(product.price * cart[id]) + '</p>' +
-              '<button class="remove" type="button" data-act="remove">Quitar</button>' +
-            '</div>' +
-          '</li>';
-      }).join("");
+        var item = document.createElement("li");
+        item.className = "cart-item";
+        item.dataset.id = id;
+
+        var details = document.createElement("div");
+        var name = document.createElement("p");
+        name.className = "cart-item-name";
+        name.textContent = product.name;
+        var size = document.createElement("p");
+        size.className = "cart-item-size";
+        size.textContent = product.size;
+
+        var quantity = document.createElement("div");
+        quantity.className = "qty";
+        var decrease = document.createElement("button");
+        decrease.type = "button";
+        decrease.dataset.act = "dec";
+        decrease.setAttribute("aria-label", "Quitar una unidad de " + product.name);
+        decrease.textContent = "−";
+        var amount = document.createElement("span");
+        amount.setAttribute("aria-label", "Cantidad: " + cart[id]);
+        amount.textContent = String(cart[id]);
+        var increase = document.createElement("button");
+        increase.type = "button";
+        increase.dataset.act = "inc";
+        increase.setAttribute("aria-label", "Agregar una unidad de " + product.name);
+        increase.textContent = "+";
+        quantity.append(decrease, amount, increase);
+        details.append(name, size, quantity);
+
+        var side = document.createElement("div");
+        side.className = "cart-item-side";
+        var itemPrice = document.createElement("p");
+        itemPrice.className = "cart-item-price";
+        itemPrice.textContent = money(product.price * cart[id]);
+        var remove = document.createElement("button");
+        remove.className = "remove";
+        remove.type = "button";
+        remove.dataset.act = "remove";
+        remove.textContent = "Quitar";
+        side.append(itemPrice, remove);
+
+        item.append(details, side);
+        cartList.appendChild(item);
+      });
     }
 
     function showToast(message) {
@@ -690,15 +723,26 @@
       if (refocus !== false && lastFocus) lastFocus.focus();
     }
 
-    document.querySelectorAll(".add-to-cart").forEach(function (button) {
-      button.addEventListener("click", function () {
+    productGrid.addEventListener("click", function (event) {
+      var button = event.target.closest(".add-to-cart");
+      if (!button || !productGrid.contains(button)) return;
         var id = button.getAttribute("data-id");
         if (!PRODUCTS[id]) return;
         cart[id] = Math.min(99, (cart[id] || 0) + 1);
         saveCart();
         renderCart();
         showToast(PRODUCTS[id].name + " agregado a tu pedido.");
+    });
+
+    window.addEventListener("nativa:products-loaded", function (event) {
+      event.detail.forEach(function (product) {
+        PRODUCTS[String(product.id)] = {
+          name: product.title,
+          size: product.presentation,
+          price: Number(product.price_cop)
+        };
       });
+      renderCart();
     });
 
     cartList.addEventListener("click", function (event) {
@@ -792,5 +836,6 @@
     renderCart();
   })();
 </script>
+<script type="module" src="storefront.js"></script>
 </body>
 </html>
