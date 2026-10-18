@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f8f4">
+  <meta name="description" content="Panel de administración de Nativa Botánica.">
+  <title>Crear producto · Nativa Botánica</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="admin.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Navegación del administrador">
+      <a class="brand" href="index.html" aria-label="Nativa Botánica, ir a la tienda">
+        <span class="brand-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9"/><path d="M12 14c-4.5 0-7-2.4-7-6 4.6 0 7 2 7 6Z"/><path d="M12 11c0-3.4 2.2-5.5 6-5.5 0 3.8-2.1 5.5-6 5.5Z"/></svg>
+        </span>
+        <span class="brand-copy"><strong>nativa</strong><span>BOTÁNICA</span></span>
+      </a>
+
+      <div class="sidebar-label">TIENDA</div>
+      <nav class="side-nav">
+        <a class="side-link" href="index.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/></svg>
+          <span>Resumen</span>
+        </a>
+        <a class="side-link" href="index.html#productos">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7h14l1 14H4L5 7Z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>
+          <span>Productos</span>
+        </a>
+        <a class="side-link active" href="#formulario" aria-current="page">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          <span>Nuevo producto</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="store-status"><span class="status-dot"></span><span>Tienda en línea</span></div>
+        <a class="store-link" href="index.html" target="_blank" rel="noreferrer">
+          Ver tienda
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/></svg>
+        </a>
+        <div class="profile"><span class="avatar">NB</span><span><strong>Nativa Botánica</strong><small>Administración</small></span></div>
+      </div>
+    </aside>
+
+    <main class="workspace" id="formulario">
+      <header class="topbar">
+        <div class="breadcrumbs"><span>Productos</span><span class="crumb-divider">/</span><strong>Nuevo producto</strong></div>
+        <div class="top-actions">
+          <span class="connection-label" id="connection-label"><span class="status-dot"></span>Guardado local</span>
+          <button class="login-trigger" id="login-open" type="button" hidden>Iniciar sesión</button>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <section class="page-heading" aria-labelledby="page-title">
+          <div>
+            <p class="eyebrow">CATÁLOGO · NUEVA PUBLICACIÓN</p>
+            <h1 id="page-title">Crear producto</h1>
+            <p class="page-intro">Completa los detalles y revisa cómo se verá en tu tienda.</p>
+          </div>
+          <span class="draft-indicator" id="draft-indicator"><span class="draft-dot"></span>Borrador sin guardar</span>
+        </section>
+
+        <div class="editor-grid">
+          <section class="editor-panel" aria-labelledby="details-title">
+            <div class="panel-heading">
+              <div><span class="step-index">01</span><h2 id="details-title">Detalles del producto</h2></div>
+              <span class="required-note">* Obligatorio</span>
+            </div>
+
+            <form id="product-form" novalidate>
+              <div class="field-group">
+                <label for="category">Categoría <span class="required-mark">*</span></label>
+                <select id="category" name="category" required>
+                  <option value="Energía">Energía</option>
+                  <option value="Digestión">Digestión</option>
+                  <option value="Nutrición">Nutrición</option>
+                  <option value="Saciedad">Saciedad</option>
+                  <option value="Bienestar">Bienestar</option>
+                </select>
+                <div class="quick-categories" aria-label="Categorías rápidas">
+                  <button type="button" class="category-chip selected" data-category="Energía">Energía</button>
+                  <button type="button" class="category-chip" data-category="Digestión">Digestión</button>
+                  <button type="button" class="category-chip" data-category="Nutrición">Nutrición</button>
+                  <button type="button" class="category-chip" data-category="Saciedad">Saciedad</button>
+                </div>
+              </div>
+
+              <div class="field-group">
+                <label for="title">Título del producto <span class="required-mark">*</span></label>
+                <input id="title" name="title" type="text" maxlength="90" placeholder="Ej. Té verde sencha" value="Té verde sencha" required>
+                <span class="field-hint">Un nombre claro y fácil de encontrar.</span>
+              </div>
+
+              <div class="field-group">
+                <div class="label-line"><label for="description">Descripción corta <span class="required-mark">*</span></label><span class="character-count" id="description-count">0 / 180</span></div>
+                <textarea id="description" name="description" rows="3" maxlength="180" placeholder="Cuenta qué lo hace especial..." required>Hojas sueltas de sencha, suaves y vegetales. Una taza para empezar el día con calma.</textarea>
+              </div>
+
+              <div class="field-row">
+                <div class="field-group">
+                  <label for="presentation">Presentación <span class="required-mark">*</span></label>
+                  <input id="presentation" name="presentation" type="text" maxlength="60" placeholder="100 g · hojas sueltas" value="100 g · hojas sueltas" required>
+                </div>
+                <div class="field-group">
+                  <label for="price">Precio <span class="required-mark">*</span></label>
+                  <div class="price-input"><span>$</span><input id="price" name="price" type="number" min="1" step="1" inputmode="numeric" value="24900" placeholder="24.900" required><span class="currency">COP</span></div>
+                </div>
+              </div>
+
+              <div class="field-group image-field">
+                <div class="label-line"><label>Imagen del producto <span class="required-mark">*</span></label><span class="field-hint">JPG, PNG o WEBP · máx. 5 MB</span></div>
+                <input id="image-file" name="image" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+                <div class="upload-zone" id="upload-zone" role="button" tabindex="0" aria-label="Subir imagen del producto o arrastrar archivo aquí">
+                  <div class="upload-empty" id="upload-empty">
+                    <span class="upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m-4 4 4-4 4 4"/><path d="M20 16.5v2a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18.5v-2"/></svg></span>
+                    <span class="upload-copy"><strong>Haz clic para subir</strong> o arrastra una imagen aquí<small>PNG, JPG o WEBP hasta 5 MB</small></span>
+                  </div>
+                  <img id="upload-preview" class="upload-preview" alt="Vista previa de la imagen seleccionada" hidden>
+                  <button class="remove-image" id="remove-image" type="button" aria-label="Quitar imagen" title="Quitar imagen" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+                </div>
+                <span class="field-hint" id="image-hint">Una imagen nítida ayuda a reconocer el producto.</span>
+              </div>
+
+              <div class="form-footer">
+                <button class="button button-secondary" id="save-draft" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h12l3 3v13H4V5a1 1 0 0 1 1-1Z"/><path d="M8 4v6h8V4M8 20v-6h8v6"/></svg>Guardar borrador</button>
+                <button class="button button-primary" id="publish-product" type="submit">Publicar producto <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>
+              </div>
+              <p class="form-message" id="form-message" role="status" aria-live="polite"></p>
+            </form>
+          </section>
+
+          <aside class="preview-column" aria-labelledby="preview-heading">
+            <div class="preview-heading">
+              <div><span class="step-index">02</span><h2 id="preview-heading">Vista previa</h2></div>
+              <span class="live-badge"><span></span>EN VIVO</span>
+            </div>
+            <p class="preview-caption">Así aparecerá en la despensa de tu tienda.</p>
+            <article class="product-card" aria-label="Vista previa de la publicación">
+              <div class="preview-image-wrap">
+                <img id="preview-image" class="preview-image" alt="" hidden>
+                <div class="preview-placeholder" id="preview-placeholder" aria-hidden="true">
+                  <svg viewBox="0 0 400 300" role="img"><rect width="400" height="300" fill="#f1f4ef"/><circle cx="200" cy="146" r="101" fill="#fff" opacity=".68"/><ellipse cx="200" cy="246" rx="91" ry="12" fill="#dce6dd"/><path d="M135 135h130v76a42 42 0 0 1-42 42h-46a42 42 0 0 1-42-42Z" fill="#fff" stroke="#dce6dd" stroke-width="3"/><ellipse cx="200" cy="135" rx="65" ry="12" fill="#d6e5d8" stroke="#dce6dd" stroke-width="3"/><path d="M265 151h9a26 26 0 0 1 0 52h-11" fill="none" stroke="#b8cfbd" stroke-width="8" stroke-linecap="round"/><path d="M172 112c-10-14 10-22 0-38m38 38c-10-14 10-22 0-38" fill="none" stroke="#819b86" stroke-width="2.5" stroke-linecap="round" opacity=".7"/><path d="M70 205c20-29 49-31 74-5-24 27-54 29-74 5Z" fill="#9bb9a0"/><path d="M257 87c19-28 47-30 70-5-22 26-51 28-70 5Z" fill="#c4d8c6"/></svg>
+                </div>
+              </div>
+              <div class="preview-body">
+                <span class="preview-tag" id="preview-category">Energía</span>
+                <h3 id="preview-title">Té verde sencha</h3>
+                <p id="preview-description">Hojas sueltas de sencha, suaves y vegetales. Una taza para empezar el día con calma.</p>
+                <div class="preview-meta"><span id="preview-presentation">100 g · hojas sueltas</span><strong id="preview-price">$24.900</strong></div>
+                <button class="preview-add" type="button" tabindex="-1" aria-label="Vista previa del botón Agregar">Agregar</button>
+              </div>
+            </article>
+            <div class="preview-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-8h.01"/></svg><p>La vista previa se actualiza mientras escribes.</p></div>
+          </aside>
+        </div>
+
+        <section class="recent-section" aria-labelledby="recent-title">
+          <div class="recent-heading"><div><p class="eyebrow">TU CATÁLOGO</p><h2 id="recent-title">Guardados en este dispositivo</h2></div><span id="saved-count" class="saved-count">0 productos</span></div>
+          <div id="saved-products" class="saved-products"><p class="empty-list">Los borradores y publicaciones que guardes aparecerán aquí.</p></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <dialog class="auth-dialog" id="auth-dialog" aria-labelledby="auth-title">
+    <form id="auth-form" class="auth-form">
+      <button class="dialog-close" id="login-close" type="button" aria-label="Cerrar">×</button>
+      <span class="auth-mark" aria-hidden="true">NB</span>
+      <p class="eyebrow">NATIVA BOTÁNICA</p>
+      <h2 id="auth-title">Acceso de administración</h2>
+      <p class="auth-description">Inicia sesión con un usuario creado en Supabase para publicar en la tienda.</p>
+      <label for="auth-email">Correo electrónico</label>
+      <input id="auth-email" type="email" autocomplete="username" required>
+      <label for="auth-password">Contraseña</label>
+      <input id="auth-password" type="password" autocomplete="current-password" required>
+      <button class="button button-primary auth-submit" type="submit">Iniciar sesión</button>
+      <p class="auth-message" id="auth-message" role="status" aria-live="polite"></p>
+    </form>
+  </dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
