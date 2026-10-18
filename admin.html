@@ -127,6 +127,24 @@
                   <button class="remove-image" id="remove-image" type="button" aria-label="Quitar imagen" title="Quitar imagen" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
                 </div>
                 <span class="field-hint" id="image-hint">Una imagen nítida ayuda a reconocer el producto.</span>
+                <div class="image-adjustments" id="image-adjustments" hidden>
+                  <div class="adjustments-heading">
+                    <div><strong>Ajustar encuadre</strong><span>El recorte se aplicará al publicar.</span></div>
+                    <button class="center-image" id="center-image" type="button">Centrar</button>
+                  </div>
+                  <label class="range-control" for="image-zoom">
+                    <span>Zoom <output id="image-zoom-value">100%</output></span>
+                    <input id="image-zoom" type="range" min="100" max="250" step="1" value="100">
+                  </label>
+                  <label class="range-control" for="image-position-x">
+                    <span>Horizontal <output id="image-position-x-value">50%</output></span>
+                    <input id="image-position-x" type="range" min="0" max="100" step="1" value="50">
+                  </label>
+                  <label class="range-control" for="image-position-y">
+                    <span>Vertical <output id="image-position-y-value">50%</output></span>
+                    <input id="image-position-y" type="range" min="0" max="100" step="1" value="50">
+                  </label>
+                </div>
               </div>
 
               <div class="form-footer">

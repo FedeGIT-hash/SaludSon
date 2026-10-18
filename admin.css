@@ -111,6 +111,18 @@ h1 { margin-bottom: 6px; font-size: 27px; font-weight: 700; letter-spacing: 0; l
 .remove-image { position: absolute; top: 8px; right: 8px; display: grid; width: 27px; height: 27px; place-items: center; border: 1px solid #e4e8e3; border-radius: 50%; background: #fff; color: #59645b; cursor: pointer; }
 .remove-image svg { width: 14px; height: 14px; }
 .remove-image:hover { color: #a1533f; }
+.image-adjustments { margin-top: 12px; padding: 13px 14px 10px; border: 1px solid #e5eae4; border-radius: 6px; background: #fbfcfa; }
+.adjustments-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 13px; }
+.adjustments-heading strong, .adjustments-heading span { display: block; }
+.adjustments-heading strong { font-size: 11px; }
+.adjustments-heading span { margin-top: 2px; color: #89928a; font-size: 9px; }
+.center-image { flex: none; padding: 5px 8px; border: 1px solid #dfe6df; border-radius: 4px; background: white; color: var(--forest); font-size: 9px; font-weight: 700; cursor: pointer; }
+.center-image:hover { border-color: #b8cfbb; background: #f3f7f2; }
+.range-control { display: block; margin-top: 10px; }
+.range-control > span { display: flex; align-items: center; justify-content: space-between; color: #59645b; font-size: 10px; font-weight: 600; }
+.range-control output { color: #718074; font-variant-numeric: tabular-nums; font-weight: 500; }
+.field-group .range-control input[type="range"] { display: block; width: 100%; min-height: 0; height: 18px; margin: 4px 0 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; accent-color: var(--forest); cursor: pointer; }
+.field-group .range-control input[type="range"]:focus { box-shadow: none; }
 .form-footer { display: flex; justify-content: flex-end; gap: 9px; padding-top: 16px; border-top: 1px solid #edf0ec; }
 .button { display: inline-flex; min-height: 39px; align-items: center; justify-content: center; gap: 8px; padding: 0 13px; border: 1px solid transparent; border-radius: 5px; font-size: 11px; font-weight: 700; cursor: pointer; transition: background .18s ease, border-color .18s ease, transform .18s ease; }
 .button:active { transform: translateY(1px); }
@@ -131,7 +143,7 @@ h1 { margin-bottom: 6px; font-size: 27px; font-weight: 700; letter-spacing: 0; l
 .product-card { overflow: hidden; border-radius: 18px; transition: box-shadow .2s ease, transform .2s ease; }
 .product-card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(39,65,44,.09); }
 .preview-image-wrap { position: relative; display: grid; aspect-ratio: 4 / 3; place-items: center; overflow: hidden; border-bottom: 1px solid var(--line); background: #f1f4ef; }
-.preview-image { width: 100%; height: 100%; object-fit: cover; }
+.preview-image { width: 100%; height: 100%; object-fit: cover; transform-origin: center; }
 .preview-placeholder, .preview-placeholder svg { width: 100%; height: 100%; }
 .preview-body { display: flex; flex-direction: column; gap: 9px; padding: 17px; }
 .preview-tag { align-self: flex-start; padding: 4px 9px; border-radius: 999px; background: #e9f1e8; color: #477052; font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }

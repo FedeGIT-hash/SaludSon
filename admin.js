@@ -11,6 +11,11 @@
   var imageFile = null;
   var imagePreviewUrl = "";
   var toastTimer = null;
+  var imageZoom = document.getElementById("image-zoom");
+  var imagePositionX = document.getElementById("image-position-x");
+  var imagePositionY = document.getElementById("image-position-y");
+  var imageAdjustments = document.getElementById("image-adjustments");
+  var previewImage = document.getElementById("preview-image");
 
   var adminApp = document.getElementById("admin-app");
   var form = document.getElementById("product-form");
@@ -163,6 +168,58 @@
     setMessage(message, false);
   }
 
+  function updateImageCrop() {
+    var position = imagePositionX.value + "% " + imagePositionY.value + "%";
+    previewImage.style.objectPosition = position;
+    previewImage.style.transform = "scale(" + Number(imageZoom.value) / 100 + ")";
+    document.getElementById("image-zoom-value").value = imageZoom.value + "%";
+    document.getElementById("image-position-x-value").value = imagePositionX.value + "%";
+    document.getElementById("image-position-y-value").value = imagePositionY.value + "%";
+  }
+
+  function drawImageCrop(context, source, width, height) {
+    var zoom = Number(imageZoom.value) / 100;
+    var baseScale = Math.max(width / source.naturalWidth, height / source.naturalHeight);
+    var drawnWidth = source.naturalWidth * baseScale;
+    var drawnHeight = source.naturalHeight * baseScale;
+    var offsetX = -(drawnWidth - width) * Number(imagePositionX.value) / 100;
+    var offsetY = -(drawnHeight - height) * Number(imagePositionY.value) / 100;
+    var left = width / 2 + (offsetX - width / 2) * zoom;
+    var top = height / 2 + (offsetY - height / 2) * zoom;
+    context.drawImage(source, left, top, drawnWidth * zoom, drawnHeight * zoom);
+  }
+
+  function createCroppedImage(file) {
+    return new Promise(function (resolve, reject) {
+      var source = new Image();
+      var sourceUrl = URL.createObjectURL(file);
+      source.onload = function () {
+        URL.revokeObjectURL(sourceUrl);
+        try {
+          var canvas = document.createElement("canvas");
+          canvas.width = 1200;
+          canvas.height = 900;
+          drawImageCrop(canvas.getContext("2d"), source, canvas.width, canvas.height);
+          canvas.toBlob(function (blob) {
+            if (!blob) {
+              reject(new Error("No se pudo preparar el recorte de la imagen."));
+              return;
+            }
+            var fileName = file.name.replace(/\.[^.]+$/, "") + "-nativa.jpg";
+            resolve(new File([blob], fileName, { type: "image/jpeg" }));
+          }, "image/jpeg", 0.9);
+        } catch (error) {
+          reject(error);
+        }
+      };
+      source.onerror = function () {
+        URL.revokeObjectURL(sourceUrl);
+        reject(new Error("No se pudo leer la imagen seleccionada."));
+      };
+      source.src = sourceUrl;
+    });
+  }
+
   function saveLocally(status) {
     var product = currentProduct(status);
     if (product.imageUrl.indexOf("blob:") === 0) product.imageUrl = "";
@@ -184,9 +241,10 @@
     }
     var imageUrl = imagePreviewUrl;
     if (imageFile) {
-      var safeName = imageFile.name.toLowerCase().replace(/[^a-z0-9.-]+/g, "-");
+      var croppedImage = await createCroppedImage(imageFile);
+      var safeName = croppedImage.name.toLowerCase().replace(/[^a-z0-9.-]+/g, "-");
       var path = "products/" + Date.now() + "-" + safeName;
-      var upload = await client.storage.from(BUCKET).upload(path, imageFile, { upsert: false, contentType: imageFile.type });
+      var upload = await client.storage.from(BUCKET).upload(path, croppedImage, { upsert: false, contentType: croppedImage.type });
       if (upload.error) throw upload.error;
       imageUrl = client.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
     }
@@ -236,10 +294,15 @@
     uploadPreview.hidden = false;
     uploadEmpty.hidden = true;
     removeImage.hidden = false;
-    document.getElementById("preview-image").src = imagePreviewUrl;
-    document.getElementById("preview-image").hidden = false;
+    previewImage.src = imagePreviewUrl;
+    previewImage.hidden = false;
     document.getElementById("preview-placeholder").hidden = true;
     document.getElementById("image-hint").textContent = file.name;
+    imageZoom.value = "100";
+    imagePositionX.value = "50";
+    imagePositionY.value = "50";
+    imageAdjustments.hidden = false;
+    updateImageCrop();
     setMessage("Imagen lista para publicar.", false);
   }
 
@@ -252,10 +315,17 @@
     uploadPreview.hidden = true;
     uploadEmpty.hidden = false;
     removeImage.hidden = true;
-    document.getElementById("preview-image").removeAttribute("src");
-    document.getElementById("preview-image").hidden = true;
+    previewImage.removeAttribute("src");
+    previewImage.style.objectPosition = "";
+    previewImage.style.transform = "";
+    previewImage.hidden = true;
     document.getElementById("preview-placeholder").hidden = false;
     document.getElementById("image-hint").textContent = "Una imagen nítida ayuda a reconocer el producto.";
+    imageZoom.value = "100";
+    imagePositionX.value = "50";
+    imagePositionY.value = "50";
+    imageAdjustments.hidden = true;
+    updateImageCrop();
   }
 
   function showLogin(message) {
@@ -337,6 +407,15 @@
     });
   });
   removeImage.addEventListener("click", function (event) { event.stopPropagation(); clearImage(); });
+  [imageZoom, imagePositionX, imagePositionY].forEach(function (input) {
+    input.addEventListener("input", updateImageCrop);
+  });
+  document.getElementById("center-image").addEventListener("click", function () {
+    imageZoom.value = "100";
+    imagePositionX.value = "50";
+    imagePositionY.value = "50";
+    updateImageCrop();
+  });
   document.getElementById("save-draft").addEventListener("click", function () { saveProduct("draft"); });
   form.addEventListener("submit", function (event) { event.preventDefault(); saveProduct("published"); });
   logoutButton.addEventListener("click", async function () {
