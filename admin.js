@@ -31,6 +31,8 @@
   var authDialog = document.getElementById("auth-dialog");
   var authMessage = document.getElementById("auth-message");
   var logoutButton = document.getElementById("logout-button");
+  var authSubmitButton = document.getElementById("auth-submit");
+  var authAttempt = 0;
 
   function formatPrice(value) {
     var amount = Number(value);
@@ -294,9 +296,6 @@
 
     client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     connectionLabel.innerHTML = '<span class="status-dot"></span>Verificando acceso…';
-    client.auth.onAuthStateChange(function (_event, session) {
-      window.setTimeout(function () { applySession(session); }, 0);
-    });
     client.auth.getSession().then(function (result) {
       if (result.error) {
         connectionLabel.innerHTML = '<span class="status-dot"></span>Error de conexión';
@@ -341,7 +340,9 @@
   document.getElementById("save-draft").addEventListener("click", function () { saveProduct("draft"); });
   form.addEventListener("submit", function (event) { event.preventDefault(); saveProduct("published"); });
   logoutButton.addEventListener("click", async function () {
-    if (client) await client.auth.signOut();
+    if (!client) return;
+    await client.auth.signOut();
+    showLogin("Sesión cerrada.");
   });
   document.getElementById("auth-form").addEventListener("submit", async function (event) {
     event.preventDefault();
@@ -349,19 +350,37 @@
       authMessage.textContent = "Supabase no está configurado. Contacta a quien administra el sitio.";
       return;
     }
+    var currentAttempt = ++authAttempt;
+    authSubmitButton.disabled = true;
+    authSubmitButton.textContent = "Validando acceso…";
     authMessage.textContent = "Verificando acceso…";
+    var timeout = window.setTimeout(function () {
+      if (currentAttempt !== authAttempt) return;
+      authMessage.textContent = "Supabase no respondió. Comprueba la conexión y vuelve a intentarlo.";
+      authSubmitButton.disabled = false;
+      authSubmitButton.textContent = "Reintentar";
+    }, 15000);
     try {
       var result = await client.auth.signInWithPassword({
         email: document.getElementById("auth-email").value,
         password: document.getElementById("auth-password").value
       });
+      if (currentAttempt !== authAttempt) return;
       if (result.error) {
         authMessage.textContent = result.error.message;
         return;
       }
       await applySession(result.data.session);
     } catch (error) {
-      authMessage.textContent = error.message || "No fue posible iniciar sesión.";
+      if (currentAttempt === authAttempt) {
+        authMessage.textContent = error.message || "No fue posible iniciar sesión.";
+      }
+    } finally {
+      window.clearTimeout(timeout);
+      if (currentAttempt === authAttempt) {
+        authSubmitButton.disabled = false;
+        authSubmitButton.textContent = "Entrar al panel";
+      }
     }
   });
 
