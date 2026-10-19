@@ -162,6 +162,8 @@ h1 { margin-bottom: 6px; font-size: 27px; font-weight: 700; letter-spacing: 0; l
 .catalog-filters { display: flex; gap: 17px; }
 .catalog-filter { padding: 5px 0; border: 0; border-bottom: 2px solid transparent; background: transparent; color: #788279; font-size: 11px; cursor: pointer; }
 .catalog-filter.active { border-color: var(--forest); color: var(--forest-deep); font-weight: 700; }
+.catalog-warning { margin: 0 0 12px; padding: 10px 12px; border-left: 2px solid #b88743; background: #fbf7ef; color: #725c38; font-size: 11px; overflow-wrap: anywhere; }
+.catalog-warning code { font-size: 10px; }
 .management-list { display: grid; }
 .management-item { display: grid; grid-template-columns: 68px minmax(140px, 1fr) auto 100px auto minmax(230px, auto); align-items: center; gap: 14px; padding: 13px 0; border-bottom: 1px solid var(--line); }
 .management-image { width: 68px; height: 68px; object-fit: cover; background: #f1f4ef; }

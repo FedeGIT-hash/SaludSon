@@ -38,6 +38,7 @@
   var catalogProducts = [];
   var catalogFilter = "published";
   var editingProductId = null;
+  var stockColumnAvailable = true;
   var authDialog = document.getElementById("auth-dialog");
   var authMessage = document.getElementById("auth-message");
   var logoutButton = document.getElementById("logout-button");
@@ -57,8 +58,8 @@
     document.getElementById("preview-presentation").textContent = presentation.value.trim() || "Presentación";
     document.getElementById("preview-price").textContent = formatPrice(price.value);
     var previewAdd = document.querySelector(".preview-add");
-    previewAdd.textContent = stock.value === "" || Number(stock.value) > 0 ? "Agregar" : "Agotado";
-    previewAdd.disabled = stock.value !== "" && Number(stock.value) <= 0;
+    previewAdd.textContent = !stockColumnAvailable || stock.value === "" || Number(stock.value) > 0 ? "Agregar" : "Agotado";
+    previewAdd.disabled = stockColumnAvailable && stock.value !== "" && Number(stock.value) <= 0;
     document.getElementById("description-count").textContent = description.value.length + " / 180";
     draftIndicator.classList.remove("is-saved");
     draftIndicator.innerHTML = '<span class="draft-dot"></span>Cambios sin guardar';
@@ -183,6 +184,7 @@
       inventoryInput.step = "1";
       inventoryInput.value = product.stock == null ? "" : String(product.stock);
       inventoryInput.placeholder = "Sin definir";
+      inventoryInput.disabled = !stockColumnAvailable;
       inventoryInput.setAttribute("aria-label", "Stock disponible de " + product.title);
       inventory.append(inventoryLabel, inventoryInput);
       var status = document.createElement("span");
@@ -194,6 +196,7 @@
       saveStock.type = "button";
       saveStock.className = "text-action";
       saveStock.textContent = "Actualizar stock";
+      saveStock.disabled = !stockColumnAvailable;
       saveStock.addEventListener("click", function () {
         if (inventoryInput.value.trim() === "") { showToast("Escribe una cantidad de stock para actualizar."); return; }
         updateProduct(product.id, { stock: Number(inventoryInput.value) }, "Stock actualizado.");
@@ -225,17 +228,32 @@
   async function loadCatalog() {
     if (!client || !managementProducts) return;
     managementProducts.innerHTML = '<p class="empty-list">Cargando catálogo…</p>';
-    var result = await client.from(TABLE).select("id,category,title,description,presentation,price_cop,image_url,status,stock,created_at").order("created_at", { ascending: false });
-    if (result.error) {
-      managementProducts.innerHTML = '<p class="empty-list">No se pudo cargar el catálogo. Comprueba que ejecutaste la actualización de stock en Supabase.</p>';
+    try {
+      var result = await client.from(TABLE).select("id,category,title,description,presentation,price_cop,image_url,status,stock,created_at").order("created_at", { ascending: false });
+      stockColumnAvailable = !result.error;
+      if (result.error) {
+        result = await client.from(TABLE).select("id,category,title,description,presentation,price_cop,image_url,status,created_at").order("created_at", { ascending: false });
+      }
+      if (result.error) throw result.error;
+      catalogProducts = result.data || [];
+      if (!stockColumnAvailable) catalogProducts.forEach(function (product) { product.stock = null; });
+      document.getElementById("catalog-warning").hidden = stockColumnAvailable;
+      renderCatalog();
+    } catch (error) {
+      document.getElementById("catalog-warning").hidden = true;
+      var errorMessage = document.createElement("p");
+      errorMessage.className = "empty-list";
+      errorMessage.textContent = "No se pudo cargar el catálogo: " + (error.message || "Error de conexión");
+      managementProducts.replaceChildren(errorMessage);
       document.getElementById("catalog-count").textContent = "Error al cargar";
-      return;
     }
-    catalogProducts = result.data || [];
-    renderCatalog();
   }
 
   async function updateProduct(id, changes, message) {
+    if (changes.stock !== undefined && !stockColumnAvailable) {
+      showToast("Ejecuta primero la actualización de stock en Supabase.");
+      return;
+    }
     if (changes.stock !== undefined && (!Number.isInteger(changes.stock) || changes.stock < 0)) {
       showToast("El stock debe ser un número entero igual o mayor que cero.");
       return;
@@ -279,6 +297,7 @@
     presentation.value = product.presentation;
     price.value = String(product.price_cop);
     stock.value = product.stock == null ? "" : String(product.stock);
+    stock.disabled = !stockColumnAvailable;
     imageFile = null;
     imagePreviewUrl = product.image_url || "";
     fileInput.value = "";
@@ -416,9 +435,9 @@
       presentation: product.presentation,
       price_cop: product.price,
       image_url: imageUrl,
-      stock: product.stock,
       status: status
     };
+    if (stockColumnAvailable) productValues.stock = product.stock;
     var result = editingProductId
       ? await client.from(TABLE).update(productValues).eq("id", editingProductId)
       : await client.from(TABLE).insert(productValues).select("id").single();
@@ -592,6 +611,7 @@
         editingProductId = null;
         form.reset();
         stock.value = "0";
+        stock.disabled = !stockColumnAvailable;
         clearImage();
         updatePreview();
         document.getElementById("publish-product").textContent = "Publicar producto";

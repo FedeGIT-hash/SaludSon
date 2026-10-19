@@ -76,6 +76,7 @@
             </div>
             <span class="saved-count" id="catalog-count">Cargando productos…</span>
           </div>
+          <p class="catalog-warning" id="catalog-warning" hidden>El catálogo carga sin inventario. Para activar el stock, ejecuta en Supabase: <code>alter table public.products add column if not exists stock integer check (stock &gt;= 0);</code></p>
           <div class="management-list" id="management-products"><p class="empty-list">Cargando catálogo…</p></div>
         </section>
 
