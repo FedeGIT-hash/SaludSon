@@ -8,7 +8,7 @@
 <title>Nativa Botánica</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&amp;family=Schibsted+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&amp;family=DM+Sans:wght@400;500;600;700&amp;family=Instrument+Sans:wght@400;500;600;700&amp;family=Schibsted+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -550,8 +550,13 @@
       <span id="cart-subtotal">$0</span>
     </div>
     <p class="drawer-note">Envío gratis desde $80.000. Impuestos incluidos.</p>
-    <button class="btn btn-block" id="checkout" type="button">Finalizar pedido</button>
-    <p class="checkout-note" id="checkout-note" hidden>El pago en línea estará disponible pronto. Escríbenos a hola@nativa.co para cerrar tu pedido.</p>
+    <button class="btn btn-block" id="checkout" type="button">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M12.04 2C6.6 2 2.2 6.4 2.2 11.84c0 1.74.46 3.44 1.32 4.94L2 22l5.36-1.4c1.44.78 3.06 1.2 4.68 1.2h.01c5.44 0 9.84-4.4 9.84-9.84 0-2.63-1.02-5.1-2.88-6.96A9.76 9.76 0 0 0 12.04 2Zm0 1.8c2.16 0 4.18.84 5.7 2.36a8.02 8.02 0 0 1 2.36 5.7c0 4.44-3.6 8.04-8.05 8.04a8.1 8.1 0 0 1-4.1-1.12l-.3-.17-3.06.8.82-3-.19-.31a8 8 0 0 1-1.23-4.26c0-4.44 3.6-8.04 8.05-8.04Zm-2.9 4.1c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2s.86 2.32.98 2.48c.12.16 1.68 2.68 4.12 3.64 2.04.8 2.46.64 2.9.6.44-.04 1.42-.58 1.62-1.14.2-.56.2-1.04.14-1.14-.06-.1-.22-.16-.46-.28-.24-.12-1.42-.7-1.64-.78-.22-.08-.38-.12-.54.12-.16.24-.62.8-.76.96-.14.16-.28.18-.52.06-.24-.12-1.02-.38-1.94-1.2-.72-.64-1.2-1.42-1.34-1.66-.14-.24-.02-.38.1-.5.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.32-.74-1.8-.2-.48-.4-.42-.54-.42h-.46Z"/>
+      </svg>
+      <span>Finalizar pedido por WhatsApp</span>
+    </button>
+    <p class="checkout-note" id="checkout-note">Te llevamos a WhatsApp con el resumen de tu pedido ya escrito. Solo tienes que enviarlo.</p>
   </div>
 </aside>
 
@@ -570,8 +575,12 @@
       "te-verde": { name: "Té verde sencha", size: "100 g · hojas sueltas", price: 24900 },
       "curcuma-jengibre": { name: "Cúrcuma + jengibre", size: "60 cápsulas", price: 28900 },
       "moringa": { name: "Moringa en polvo", size: "200 g", price: 32900 },
+      "acxion": { name: "Acxion Pastillas", size: "200 g", price: 32900 },
       "psyllium": { name: "Fibra de psyllium", size: "250 g", price: 21900 }
     };
+
+    // Número de WhatsApp que recibe los pedidos (código de país + número, sin + ni espacios).
+    var WHATSAPP_NUMBER = "526221054866";
 
     var STORAGE_KEY = "nativa-cart-v1";
     var cart = readCart();
@@ -588,7 +597,6 @@
     var cartSubtotal = document.getElementById("cart-subtotal");
     var emptyShop = document.getElementById("empty-shop");
     var checkout = document.getElementById("checkout");
-    var checkoutNote = document.getElementById("checkout-note");
     var toast = document.getElementById("toast");
     var toastMsg = document.getElementById("toast-msg");
     var menuBtn = document.getElementById("menu-toggle");
@@ -623,6 +631,41 @@
 
     function money(value) {
       return "$" + value.toLocaleString("es-CO");
+    }
+
+    function cartLines() {
+      var ids = Object.keys(cart).filter(function (id) {
+        return Object.prototype.hasOwnProperty.call(PRODUCTS, id);
+      });
+      var total = 0;
+      var lines = ids.map(function (id) {
+        var product = PRODUCTS[id];
+        var lineTotal = product.price * cart[id];
+        total += lineTotal;
+        return "• " + cart[id] + " × " + product.name + " (" + product.size + ") — " + money(lineTotal);
+      });
+      return { lines: lines, total: total };
+    }
+
+    function buildOrderMessage() {
+      var summary = cartLines();
+      var lines = ["¡Hola! Quiero hacer este pedido:", ""];
+      lines = lines.concat(summary.lines);
+      lines.push("");
+      lines.push("Total: " + money(summary.total));
+      lines.push("");
+      lines.push("Por favor confírmenme disponibilidad y el valor del envío.");
+      return lines.join("\n");
+    }
+
+    function openWhatsApp() {
+      var summary = cartLines();
+      if (!summary.lines.length) return;
+      var url = "https://wa.me/" + WHATSAPP_NUMBER +
+        "?text=" + encodeURIComponent(buildOrderMessage());
+      var opened = window.open(url, "_blank", "noopener");
+      if (!opened) window.location.href = url;
+      showToast("Abriendo WhatsApp con tu pedido…");
     }
 
     function renderCart() {
@@ -718,7 +761,6 @@
     function closeCart(refocus) {
       drawer.hidden = true;
       scrim.hidden = true;
-      checkoutNote.hidden = true;
       document.body.classList.remove("no-scroll");
       if (refocus !== false && lastFocus) lastFocus.focus();
     }
@@ -798,9 +840,7 @@
       if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
     });
 
-    checkout.addEventListener("click", function () {
-      checkoutNote.hidden = false;
-    });
+    checkout.addEventListener("click", openWhatsApp);
 
     document.addEventListener("keydown", function (event) {
       if (event.key === "Escape") {

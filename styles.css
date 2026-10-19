@@ -19,6 +19,8 @@
     --shadow: 0 18px 40px -24px rgba(32, 42, 36, 0.22);
     --font-display: "Schibsted Grotesk", "Segoe UI", system-ui, sans-serif;
     --font-body: "Instrument Sans", "Segoe UI", system-ui, sans-serif;
+    --font-header-display: "Cormorant Garamond", Georgia, serif;
+    --font-header-ui: "DM Sans", "Segoe UI", system-ui, sans-serif;
     --radius: 18px;
     --max: 1160px;
   }
@@ -129,6 +131,7 @@
 
   .btn:active { transform: translateY(1px); }
   .btn-block { width: 100%; }
+  .btn svg { width: 18px; height: 18px; flex: none; }
 
   .text-link {
     display: inline-flex;
@@ -192,15 +195,17 @@
     position: sticky;
     top: env(safe-area-inset-top, 0px);
     z-index: 50;
-    background: var(--bg);
-    border-bottom: 1px solid var(--line);
+    background: rgba(250, 251, 248, 0.97);
+    border-bottom: 1px solid #d9e2da;
+    box-shadow: 0 5px 20px rgba(35, 55, 40, 0.045);
+    backdrop-filter: blur(14px);
   }
 
   .header-inner {
     display: flex;
     align-items: center;
-    gap: 28px;
-    min-height: 74px;
+    gap: 32px;
+    min-height: 82px;
   }
 
   .brand {
@@ -213,15 +218,15 @@
   .brand-mark {
     display: grid;
     place-items: center;
-    width: 34px;
-    height: 34px;
+    width: 40px;
+    height: 40px;
     flex: none;
-    border-radius: 50%;
+    border-radius: 9px;
     background: var(--accent);
     color: var(--on-accent);
   }
 
-  .brand-mark svg { width: 18px; height: 18px; }
+  .brand-mark svg { width: 20px; height: 20px; }
 
   .brand-text {
     display: flex;
@@ -230,35 +235,38 @@
   }
 
   .brand-name {
-    font-family: var(--font-display);
-    font-size: 1.4rem;
-    font-weight: 700;
-    line-height: 1;
-    letter-spacing: -0.05em;
+    font-family: var(--font-header-display);
+    font-size: 1.85rem;
+    font-weight: 600;
+    line-height: 0.9;
+    letter-spacing: 0;
   }
 
   .brand-sub {
-    margin-top: 4px;
-    color: var(--muted);
-    font-size: 0.6rem;
+    margin-top: 6px;
+    color: var(--accent);
+    font-family: var(--font-header-ui);
+    font-size: 0.55rem;
     font-weight: 600;
-    letter-spacing: 0.17em;
+    letter-spacing: 0;
     text-transform: uppercase;
   }
 
   .nav {
     display: flex;
     align-items: center;
-    gap: clamp(16px, 2vw, 28px);
+    gap: clamp(22px, 2.5vw, 38px);
     margin-left: auto;
   }
 
   .nav a {
     position: relative;
     padding-block: 6px;
-    color: var(--muted);
-    font-size: 0.92rem;
-    font-weight: 500;
+    color: #526258;
+    font-family: var(--font-header-ui);
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0;
     transition: color 0.2s ease;
   }
 
@@ -289,19 +297,21 @@
     align-items: center;
     justify-content: center;
     gap: 7px;
-    padding: 0.55rem 0.8rem;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    color: var(--accent);
-    font-size: 0.84rem;
+    padding: 0.5rem 0.15rem;
+    border: 0;
+    border-bottom: 1px solid transparent;
+    border-radius: 0;
+    color: #42634b;
+    font-family: var(--font-header-ui);
+    font-size: 0.78rem;
     font-weight: 600;
+    letter-spacing: 0;
     white-space: nowrap;
     transition: border-color 0.2s ease, background-color 0.2s ease;
   }
 
   .admin-link:hover {
-    border-color: var(--accent-soft);
-    background: var(--surface-2);
+    border-bottom-color: var(--accent);
   }
 
   .admin-link svg { width: 16px; height: 16px; }
@@ -312,7 +322,7 @@
     align-items: center;
     justify-content: center;
     border: 1px solid var(--line);
-    border-radius: 999px;
+    border-radius: 4px;
     background: var(--surface);
     cursor: pointer;
     transition: border-color 0.2s ease, background-color 0.2s ease;
@@ -320,13 +330,18 @@
 
   .cart-btn {
     gap: 8px;
-    padding: 0.55rem 0.75rem;
-    font-size: 0.88rem;
+    padding: 0.58rem 0.85rem;
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #fff;
+    font-family: var(--font-header-ui);
+    font-size: 0.78rem;
     font-weight: 600;
+    letter-spacing: 0;
   }
 
-  .cart-btn:hover,
-  .menu-btn:hover { border-color: var(--accent-soft); }
+  .cart-btn:hover { border-color: var(--accent-hover); background: var(--accent-hover); }
+  .menu-btn:hover { border-color: var(--accent-soft); background: var(--surface-2); }
 
   .cart-btn svg { width: 18px; height: 18px; }
 
