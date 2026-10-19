@@ -51,7 +51,9 @@ function createProductCard(product) {
   addButton.className = "btn btn-block add-to-cart";
   addButton.type = "button";
   addButton.dataset.id = String(product.id);
-  addButton.textContent = "Agregar";
+  const hasTrackedStock = product.stock !== null && product.stock !== undefined;
+  addButton.textContent = !hasTrackedStock || Number(product.stock) > 0 ? "Agregar" : "Agotado";
+  addButton.disabled = hasTrackedStock && Number(product.stock) <= 0;
 
   meta.append(presentation, price);
   body.append(tag, title, description, meta, addButton);
@@ -64,7 +66,7 @@ async function loadPublishedProducts() {
 
   const endpoint = new URL("/rest/v1/products", SUPABASE_URL);
   endpoint.search = new URLSearchParams({
-    select: "id,category,title,description,presentation,price_cop,image_url,created_at",
+    select: "id,category,title,description,presentation,price_cop,image_url,stock,created_at",
     status: "eq.published",
     order: "created_at.desc"
   }).toString();

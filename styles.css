@@ -120,6 +120,13 @@
     border-color: var(--accent-hover);
   }
 
+  .btn:disabled {
+    border-color: #a7aea7;
+    background: #a7aea7;
+    color: #fff;
+    cursor: not-allowed;
+  }
+
   .btn:active { transform: translateY(1px); }
   .btn-block { width: 100%; }
 

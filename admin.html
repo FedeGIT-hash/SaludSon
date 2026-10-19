@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f7f8f4">
   <meta name="description" content="Panel de administración de Nativa Botánica.">
-  <title>Crear producto · Nativa Botánica</title>
+  <title>Productos · Nativa Botánica</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Manrope:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
@@ -29,11 +29,11 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/></svg>
           <span>Resumen</span>
         </a>
-        <a class="side-link" href="index.html#productos">
+        <a class="side-link active" href="#catalog-view" data-admin-view="catalogo" aria-current="page">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7h14l1 14H4L5 7Z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>
           <span>Productos</span>
         </a>
-        <a class="side-link active" href="#formulario" aria-current="page">
+        <a class="side-link" href="#formulario" data-admin-view="formulario">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
           <span>Nuevo producto</span>
         </a>
@@ -51,7 +51,7 @@
 
     <main class="workspace" id="formulario">
       <header class="topbar">
-        <div class="breadcrumbs"><span>Productos</span><span class="crumb-divider">/</span><strong>Nuevo producto</strong></div>
+        <div class="breadcrumbs"><span>Productos</span><span class="crumb-divider">/</span><strong id="breadcrumb-current">Catálogo</strong></div>
         <div class="top-actions">
           <span class="connection-label" id="connection-label"><span class="status-dot"></span>Guardado local</span>
           <button class="login-trigger" id="logout-button" type="button" hidden>Cerrar sesión</button>
@@ -61,12 +61,25 @@
       <div class="page-content">
         <section class="page-heading" aria-labelledby="page-title">
           <div>
-            <p class="eyebrow">CATÁLOGO · NUEVA PUBLICACIÓN</p>
-            <h1 id="page-title">Crear producto</h1>
-            <p class="page-intro">Completa los detalles y revisa cómo se verá en tu tienda.</p>
+            <p class="eyebrow" id="page-eyebrow">CATÁLOGO · PUBLICACIONES</p>
+            <h1 id="page-title">Productos publicados</h1>
+            <p class="page-intro" id="page-intro">Previsualiza y administra los productos visibles en tu tienda.</p>
           </div>
-          <span class="draft-indicator" id="draft-indicator"><span class="draft-dot"></span>Borrador sin guardar</span>
+          <span class="draft-indicator" id="draft-indicator" hidden><span class="draft-dot"></span>Borrador sin guardar</span>
         </section>
+
+        <section class="catalog-view" id="catalog-view" aria-label="Productos del catálogo">
+          <div class="catalog-toolbar">
+            <div class="catalog-filters" role="group" aria-label="Filtrar productos">
+              <button class="catalog-filter active" type="button" data-filter="published">Publicados</button>
+              <button class="catalog-filter" type="button" data-filter="all">Todos</button>
+            </div>
+            <span class="saved-count" id="catalog-count">Cargando productos…</span>
+          </div>
+          <div class="management-list" id="management-products"><p class="empty-list">Cargando catálogo…</p></div>
+        </section>
+
+        <div id="editor-view" hidden>
 
         <div class="editor-grid">
           <section class="editor-panel" aria-labelledby="details-title">
@@ -113,6 +126,12 @@
                   <label for="price">Precio <span class="required-mark">*</span></label>
                   <div class="price-input"><span>$</span><input id="price" name="price" type="number" min="1" step="1" inputmode="numeric" value="24900" placeholder="24.900" required><span class="currency">COP</span></div>
                 </div>
+              </div>
+
+              <div class="field-group stock-field">
+                <label for="stock">Stock disponible <span class="required-mark">*</span></label>
+                <input id="stock" name="stock" type="number" min="0" step="1" inputmode="numeric" value="0" required>
+                <span class="field-hint">Con stock en cero, el producto aparecerá agotado en la tienda.</span>
               </div>
 
               <div class="field-group image-field">
@@ -184,6 +203,7 @@
           <div class="recent-heading"><div><p class="eyebrow">TU CATÁLOGO</p><h2 id="recent-title">Guardados en este dispositivo</h2></div><span id="saved-count" class="saved-count">0 productos</span></div>
           <div id="saved-products" class="saved-products"><p class="empty-list">Los borradores y publicaciones que guardes aparecerán aquí.</p></div>
         </section>
+        </div>
       </div>
     </main>
   </div>

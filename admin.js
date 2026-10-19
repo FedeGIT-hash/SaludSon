@@ -24,6 +24,7 @@
   var description = document.getElementById("description");
   var presentation = document.getElementById("presentation");
   var price = document.getElementById("price");
+  var stock = document.getElementById("stock");
   var fileInput = document.getElementById("image-file");
   var uploadZone = document.getElementById("upload-zone");
   var uploadEmpty = document.getElementById("upload-empty");
@@ -33,6 +34,10 @@
   var draftIndicator = document.getElementById("draft-indicator");
   var connectionLabel = document.getElementById("connection-label");
   var savedProducts = document.getElementById("saved-products");
+  var managementProducts = document.getElementById("management-products");
+  var catalogProducts = [];
+  var catalogFilter = "published";
+  var editingProductId = null;
   var authDialog = document.getElementById("auth-dialog");
   var authMessage = document.getElementById("auth-message");
   var logoutButton = document.getElementById("logout-button");
@@ -51,6 +56,9 @@
     document.getElementById("preview-description").textContent = description.value.trim() || "La descripción de tu producto aparecerá aquí.";
     document.getElementById("preview-presentation").textContent = presentation.value.trim() || "Presentación";
     document.getElementById("preview-price").textContent = formatPrice(price.value);
+    var previewAdd = document.querySelector(".preview-add");
+    previewAdd.textContent = stock.value === "" || Number(stock.value) > 0 ? "Agregar" : "Agotado";
+    previewAdd.disabled = stock.value !== "" && Number(stock.value) <= 0;
     document.getElementById("description-count").textContent = description.value.length + " / 180";
     draftIndicator.classList.remove("is-saved");
     draftIndicator.innerHTML = '<span class="draft-dot"></span>Cambios sin guardar';
@@ -138,6 +146,157 @@
     });
   }
 
+  function renderCatalog() {
+    var products = catalogFilter === "published" ? catalogProducts.filter(function (product) { return product.status === "published"; }) : catalogProducts;
+    document.getElementById("catalog-count").textContent = products.length + (products.length === 1 ? " producto" : " productos");
+    if (!products.length) {
+      managementProducts.innerHTML = '<p class="empty-list">No hay productos en esta vista todavía.</p>';
+      return;
+    }
+    managementProducts.innerHTML = "";
+    products.forEach(function (product) {
+      var row = document.createElement("article");
+      row.className = "management-item";
+      var image = product.image_url ? document.createElement("img") : document.createElement("span");
+      image.className = "management-image" + (product.image_url ? "" : " management-image-empty");
+      if (product.image_url) { image.src = product.image_url; image.alt = ""; }
+      else image.textContent = "NB";
+      var copy = document.createElement("div");
+      copy.className = "management-copy";
+      var name = document.createElement("strong");
+      name.textContent = product.title;
+      var detail = document.createElement("span");
+      detail.textContent = product.category + " · " + product.presentation;
+      var descriptionText = document.createElement("small");
+      descriptionText.textContent = product.description;
+      copy.append(name, detail, descriptionText);
+      var amount = document.createElement("strong");
+      amount.className = "management-price";
+      amount.textContent = formatPrice(product.price_cop);
+      var inventory = document.createElement("label");
+      inventory.className = "inventory-control";
+      var inventoryLabel = document.createElement("span");
+      inventoryLabel.textContent = "Stock";
+      var inventoryInput = document.createElement("input");
+      inventoryInput.type = "number";
+      inventoryInput.min = "0";
+      inventoryInput.step = "1";
+      inventoryInput.value = product.stock == null ? "" : String(product.stock);
+      inventoryInput.placeholder = "Sin definir";
+      inventoryInput.setAttribute("aria-label", "Stock disponible de " + product.title);
+      inventory.append(inventoryLabel, inventoryInput);
+      var status = document.createElement("span");
+      status.className = "management-status" + (product.status === "published" ? " is-published" : "");
+      status.textContent = product.status === "published" ? "Publicado" : "Borrador";
+      var actions = document.createElement("div");
+      actions.className = "management-actions";
+      var saveStock = document.createElement("button");
+      saveStock.type = "button";
+      saveStock.className = "text-action";
+      saveStock.textContent = "Actualizar stock";
+      saveStock.addEventListener("click", function () {
+        if (inventoryInput.value.trim() === "") { showToast("Escribe una cantidad de stock para actualizar."); return; }
+        updateProduct(product.id, { stock: Number(inventoryInput.value) }, "Stock actualizado.");
+      });
+      var edit = document.createElement("button");
+      edit.type = "button";
+      edit.className = "text-action";
+      edit.textContent = "Editar";
+      edit.addEventListener("click", function () { editProduct(product); });
+      var toggle = document.createElement("button");
+      toggle.type = "button";
+      toggle.className = "text-action";
+      toggle.textContent = product.status === "published" ? "Pausar publicación" : "Publicar";
+      toggle.addEventListener("click", function () {
+        var nextStatus = product.status === "published" ? "draft" : "published";
+        updateProduct(product.id, { status: nextStatus }, nextStatus === "published" ? "Producto publicado." : "Publicación pausada.");
+      });
+      var remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "text-action danger-action";
+      remove.textContent = "Eliminar";
+      remove.addEventListener("click", function () { deleteProduct(product); });
+      actions.append(saveStock, edit, toggle, remove);
+      row.append(image, copy, amount, inventory, status, actions);
+      managementProducts.appendChild(row);
+    });
+  }
+
+  async function loadCatalog() {
+    if (!client || !managementProducts) return;
+    managementProducts.innerHTML = '<p class="empty-list">Cargando catálogo…</p>';
+    var result = await client.from(TABLE).select("id,category,title,description,presentation,price_cop,image_url,status,stock,created_at").order("created_at", { ascending: false });
+    if (result.error) {
+      managementProducts.innerHTML = '<p class="empty-list">No se pudo cargar el catálogo. Comprueba que ejecutaste la actualización de stock en Supabase.</p>';
+      document.getElementById("catalog-count").textContent = "Error al cargar";
+      return;
+    }
+    catalogProducts = result.data || [];
+    renderCatalog();
+  }
+
+  async function updateProduct(id, changes, message) {
+    if (changes.stock !== undefined && (!Number.isInteger(changes.stock) || changes.stock < 0)) {
+      showToast("El stock debe ser un número entero igual o mayor que cero.");
+      return;
+    }
+    var result = await client.from(TABLE).update(changes).eq("id", id);
+    if (result.error) { showToast(result.error.message || "No se pudo actualizar el producto."); return; }
+    showToast(message);
+    await loadCatalog();
+  }
+
+  async function deleteProduct(product) {
+    if (!window.confirm('¿Eliminar "' + product.title + '"? Esta acción no se puede deshacer.')) return;
+    var result = await client.from(TABLE).delete().eq("id", product.id);
+    if (result.error) { showToast(result.error.message || "No se pudo eliminar el producto."); return; }
+    showToast("Producto eliminado.");
+    await loadCatalog();
+  }
+
+  function switchView(view) {
+    var isCatalog = view !== "formulario";
+    document.getElementById("catalog-view").hidden = !isCatalog;
+    document.getElementById("editor-view").hidden = isCatalog;
+    document.getElementById("page-title").textContent = isCatalog ? "Productos publicados" : (editingProductId ? "Editar producto" : "Crear producto");
+    document.getElementById("page-eyebrow").textContent = isCatalog ? "CATÁLOGO · PUBLICACIONES" : "CATÁLOGO · " + (editingProductId ? "EDICIÓN" : "NUEVA PUBLICACIÓN");
+    document.getElementById("page-intro").textContent = isCatalog ? "Previsualiza y administra los productos visibles en tu tienda." : "Completa los detalles y revisa cómo se verá en tu tienda.";
+    document.getElementById("breadcrumb-current").textContent = isCatalog ? "Productos" : (editingProductId ? "Editar producto" : "Nuevo producto");
+    document.getElementById("draft-indicator").hidden = isCatalog;
+    document.querySelectorAll("[data-admin-view]").forEach(function (link) {
+      var active = link.dataset.adminView === (isCatalog ? "catalogo" : "formulario");
+      link.classList.toggle("active", active);
+      if (active) link.setAttribute("aria-current", "page"); else link.removeAttribute("aria-current");
+    });
+    if (isCatalog) loadCatalog();
+  }
+
+  function editProduct(product) {
+    editingProductId = product.id;
+    category.value = product.category;
+    title.value = product.title;
+    description.value = product.description;
+    presentation.value = product.presentation;
+    price.value = String(product.price_cop);
+    stock.value = product.stock == null ? "" : String(product.stock);
+    imageFile = null;
+    imagePreviewUrl = product.image_url || "";
+    fileInput.value = "";
+    uploadEmpty.hidden = Boolean(imagePreviewUrl);
+    uploadPreview.hidden = !imagePreviewUrl;
+    if (imagePreviewUrl) {
+      uploadPreview.src = imagePreviewUrl;
+      previewImage.src = imagePreviewUrl;
+      previewImage.hidden = false;
+      document.getElementById("preview-placeholder").hidden = true;
+      removeImage.hidden = false;
+    } else clearImage();
+    updatePreview();
+    document.getElementById("publish-product").textContent = product.status === "published" ? "Guardar cambios" : "Publicar producto";
+    switchView("formulario");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   function currentProduct(status) {
     return {
       id: window.crypto && window.crypto.randomUUID ? window.crypto.randomUUID() : String(Date.now()),
@@ -146,6 +305,7 @@
       description: description.value.trim(),
       presentation: presentation.value.trim(),
       price: Number(price.value),
+      stock: Number(stock.value),
       imageUrl: imagePreviewUrl || "",
       status: status,
       createdAt: new Date().toISOString()
@@ -249,18 +409,24 @@
       imageUrl = client.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
     }
     var product = currentProduct(status);
-    var result = await client.from(TABLE).insert({
+    var productValues = {
       category: product.category,
       title: product.title,
       description: product.description,
       presentation: product.presentation,
       price_cop: product.price,
       image_url: imageUrl,
+      stock: product.stock,
       status: status
-    }).select("id").single();
+    };
+    var result = editingProductId
+      ? await client.from(TABLE).update(productValues).eq("id", editingProductId)
+      : await client.from(TABLE).insert(productValues).select("id").single();
     if (result.error) throw result.error;
+    editingProductId = null;
     markSaved(status === "published" ? "Producto publicado en Supabase." : "Borrador guardado en Supabase.");
     showToast(status === "published" ? "Producto publicado correctamente." : "Borrador guardado en Supabase.");
+    switchView("catalogo");
   }
 
   async function saveProduct(status) {
@@ -355,6 +521,7 @@
     logoutButton.hidden = false;
     connectionLabel.innerHTML = '<span class="status-dot"></span>Supabase conectado';
     connectionLabel.classList.add("connected");
+    loadCatalog();
   }
 
   function configureSupabase() {
@@ -384,7 +551,7 @@
   document.querySelectorAll(".category-chip").forEach(function (chip) {
     chip.addEventListener("click", function () { category.value = chip.dataset.category; updatePreview(); });
   });
-  [category, title, description, presentation, price].forEach(function (field) {
+  [category, title, description, presentation, price, stock].forEach(function (field) {
     field.addEventListener("input", updatePreview);
     field.addEventListener("change", updatePreview);
   });
@@ -418,6 +585,28 @@
   });
   document.getElementById("save-draft").addEventListener("click", function () { saveProduct("draft"); });
   form.addEventListener("submit", function (event) { event.preventDefault(); saveProduct("published"); });
+  document.querySelectorAll("[data-admin-view]").forEach(function (link) {
+    link.addEventListener("click", function (event) {
+      event.preventDefault();
+      if (link.dataset.adminView === "formulario") {
+        editingProductId = null;
+        form.reset();
+        stock.value = "0";
+        clearImage();
+        updatePreview();
+        document.getElementById("publish-product").textContent = "Publicar producto";
+      }
+      switchView(link.dataset.adminView);
+      history.replaceState(null, "", link.getAttribute("href"));
+    });
+  });
+  document.querySelectorAll(".catalog-filter").forEach(function (button) {
+    button.addEventListener("click", function () {
+      catalogFilter = button.dataset.filter;
+      document.querySelectorAll(".catalog-filter").forEach(function (filter) { filter.classList.toggle("active", filter === button); });
+      renderCatalog();
+    });
+  });
   logoutButton.addEventListener("click", async function () {
     if (!client) return;
     await client.auth.signOut();
@@ -465,5 +654,6 @@
 
   renderLocalProducts();
   updatePreview();
+  switchView("catalogo");
   configureSupabase();
 }());

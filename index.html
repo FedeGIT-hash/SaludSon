@@ -728,6 +728,10 @@
       if (!button || !productGrid.contains(button)) return;
         var id = button.getAttribute("data-id");
         if (!PRODUCTS[id]) return;
+        if (Number.isFinite(PRODUCTS[id].stock) && (cart[id] || 0) >= PRODUCTS[id].stock) {
+          showToast("No hay más unidades disponibles de " + PRODUCTS[id].name + ".");
+          return;
+        }
         cart[id] = Math.min(99, (cart[id] || 0) + 1);
         saveCart();
         renderCart();
@@ -739,9 +743,16 @@
         PRODUCTS[String(product.id)] = {
           name: product.title,
           size: product.presentation,
-          price: Number(product.price_cop)
+          price: Number(product.price_cop),
+          stock: product.stock == null ? null : Number(product.stock)
         };
+        var productId = String(product.id);
+        if (Number.isFinite(PRODUCTS[productId].stock) && (cart[productId] || 0) > PRODUCTS[productId].stock) {
+          if (PRODUCTS[productId].stock === 0) delete cart[productId];
+          else cart[productId] = PRODUCTS[productId].stock;
+        }
       });
+      saveCart();
       renderCart();
     });
 
@@ -755,6 +766,10 @@
       if (!cart[id]) return;
 
       if (action === "inc") {
+        if (Number.isFinite(PRODUCTS[id].stock) && cart[id] >= PRODUCTS[id].stock) {
+          showToast("No hay más unidades disponibles de " + PRODUCTS[id].name + ".");
+          return;
+        }
         cart[id] = Math.min(99, cart[id] + 1);
       } else if (action === "dec") {
         cart[id] -= 1;
